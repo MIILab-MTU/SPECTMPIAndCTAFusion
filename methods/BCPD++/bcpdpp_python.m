@@ -1,0 +1,114 @@
+function [T1, s, R, t, v, Y_transformed] = bcpdpp_python(input_dir, name, isorg, save_dir)
+addpath('..');
+patientname = name;
+x = sprintf('%s/%s/ijkcta.txt', input_dir, patientname);
+if isorg
+    y = sprintf('path/to/manu/%s/cu.txt', patientname);
+else
+    y = sprintf('%s/cu.txt', save_dir);
+end
+
+fnm = sprintf('%s/../../bcpd', pwd);
+fnw = '../win/bcpd.exe';
+if (ispc)
+    bcpd = fnw;
+else
+    bcpd = fnm;
+end
+
+%% parameters
+omg = '0.0';
+bet = '2.0';
+lmd = '50';
+gma = '10';
+K = '70';
+J = '300';
+f = '0.3';
+c = '1e-6';
+n = '500';
+L = '100';
+nrm = 'e';
+dwn = 'B,5000,0.01';
+
+%% execution
+prm1 = sprintf('-w%s -b%s -l%s -g%s', omg, bet, lmd, gma);
+prm2 = sprintf('-J%s -K%s -p -f%s -u%s -D%s', J, K, f, nrm, dwn);
+prm3 = sprintf('-c%s -n%s -h -r1', c, n);
+
+
+if ~exist(save_dir, 'dir')
+    mkdir(save_dir);
+end
+
+if isorg
+    cmd = sprintf('%s -x%s -y%s -o%s -s T,v %s %s %s', bcpd, x, y, sprintf('%s/result_bcpdpp_manu', save_dir), prm1, prm2, prm3);
+else
+    cmd = sprintf('%s -x%s -y%s -o%s -s T,v %s %s %s', bcpd, x, y, sprintf('%s/result_bcpdpp_auto', save_dir), prm1, prm2, prm3);
+end
+system(cmd);
+
+X0 = load(x);
+T0 = load(y);
+if isorg
+    T1 = load(sprintf('%s/result_bcpdpp_manuy.txt', save_dir));
+    s = load(sprintf('%s/result_bcpdpp_manus.txt', save_dir));
+    R = load(sprintf('%s/result_bcpdpp_manuR.txt', save_dir));
+    t = load(sprintf('%s/result_bcpdpp_manut.txt', save_dir));
+    v = load(sprintf('%s/result_bcpdpp_manuv.txt', save_dir));
+    Y_down = load(sprintf('%s/result_bcpdpp_manuy.txt', save_dir));
+else
+    T1 = load(sprintf('%s/result_bcpdpp_autoy.txt', save_dir));
+    s = load(sprintf('%s/result_bcpdpp_autos.txt', save_dir));
+    R = load(sprintf('%s/result_bcpdpp_autoR.txt', save_dir));
+    t = load(sprintf('%s/result_bcpdpp_autot.txt', save_dir));
+    v = load(sprintf('%s/result_bcpdpp_autov.txt', save_dir));
+    Y_down = load(sprintf('%s/result_bcpdpp_autoy.txt', save_dir));
+end
+
+beta = 2.0;
+M = size(T0, 1);
+M_down = size(Y_down, 1);
+if M_down < M
+    G = zeros(M, M_down);
+    for i = 1:M
+        for j = 1:M_down
+            G(i,j) = exp(-sum((T0(i,:) - Y_down(j,:)).^2) / (2 * beta^2));
+        end
+    end
+    v_orig = zeros(M, 3);
+    for d = 1:3
+        v_orig(:,d) = G * (G \ v(:,d));
+    end
+else
+    v_orig = v;
+end
+
+Y_transformed = s * (T0 + v_orig) * R' + t';
+
+if isorg
+    save_path = sprintf('%s/result_bcpdpp_manu_transformed.txt', save_dir);
+else
+    save_path = sprintf('%s/result_bcpdpp_auto_transformed.txt', save_dir);
+end
+save(save_path, 'Y_transformed', '-ascii');
+
+fprintf('(s): %.4f\n', s);
+fprintf('(R):\n');
+disp(R);
+fprintf('(t):\n');
+disp(t);
+fprintf('(v,):\n');
+disp(v_orig(1:min(5, size(v_orig, 1)), :));
+
+save(sprintf('%s/transform.mat', save_dir), 's', 'R', 't', 'v_orig');
+
+f2 = figure('Name', 'Before/After Registration', 'NumberTitle', 'off');
+subplot(1, 2, 1);
+plot3(T0(:,1), T0(:,2), T0(:,3), '.r', 'MarkerSize', 3); hold on;
+plot3(X0(:,1), X0(:,2), X0(:,3), '.b', 'MarkerSize', 3); daspect([1 1 1]); grid on;
+title('Before Registration', 'FontSize', 18);
+subplot(1, 2, 2);
+plot3(Y_transformed(:,1), Y_transformed(:,2), Y_transformed(:,3), '.r', 'MarkerSize', 3); hold on;
+plot3(X0(:,1), X0(:,2), X0(:,3), '.b', 'MarkerSize', 3); daspect([1 1 1]); grid on;
+title('After Registration (Transformed)', 'FontSize', 18);
+end
