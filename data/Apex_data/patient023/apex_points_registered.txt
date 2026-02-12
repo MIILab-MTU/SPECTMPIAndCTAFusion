@@ -1,0 +1,9 @@
+CTA Apex: [382.931    184.451279 110.815903]
+SPECT Apex (Original Auto): [373.013997 178.040612  92.106957]
+SPECT Apex (Original Manu): [378.577865 182.025947 102.89796 ]
+SPECT Apex (Auto Transformed): [379.157479 183.37241  104.973608]
+SPECT Apex (Manu Transformed): [378.577865 182.025947 102.89796 ]
+Angle Before Registration Auto: 11.44 degrees
+Angle Before Registration Manu: 22.33 degrees
+Angle After Auto Registration: 3.48 degrees
+Angle After Manu Registration: 4.78 degrees
