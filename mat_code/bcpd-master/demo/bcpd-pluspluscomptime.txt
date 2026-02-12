@@ -1,0 +1,5 @@
+    Downsampling:    0.006 s
+    VB Optimization: 19.085 s
+    Interpolation:   1.290 s
+    File reading:    0.034 s
+    File writing:    0.008 s

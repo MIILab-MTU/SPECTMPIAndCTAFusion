@@ -1,0 +1,3 @@
+    VB Optimization: 9.466 s
+    File reading:    0.035 s
+    File writing:    0.011 s

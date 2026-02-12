@@ -1,0 +1,6 @@
+    FPSA algorithm:  1.545 s
+    Downsampling:    0.006 s
+    VB Optimization: 5.708 s
+    Interpolation:   0.014 s
+    File reading:    0.025 s
+    File writing:    0.010 s
