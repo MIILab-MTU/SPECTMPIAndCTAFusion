@@ -1,0 +1,10 @@
+[f,n,v]=stlread('Segmentation_LV.stl');
+x=f.Points(:,1);
+y=f.Points(:,2);
+z=f.Points(:,3);
+minx=min(x);
+maxx=max(x);
+miny=min(y);
+maxy=max(y);
+minz=min(z);
+maxz=max(z);
